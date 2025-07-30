@@ -10,6 +10,9 @@ from flask_cors import CORS
 from utils import APIException, generate_sitemap
 from admin import setup_admin
 from models import db, User
+from sqlalchemy import select
+
+from models import Estudiantes
 
 # from models import Person
 
@@ -59,6 +62,34 @@ def sitemap():
 def handle_hello():
 
     response_body = {"msg": "Hello, this is your GET /user response "}
+
+    return jsonify(response_body), 200
+
+
+@app.route("/students", methods=["GET"])
+def get_all_students():
+
+    # ↓↓↓ Consultar todos los registros de una tabla, modelo o entidad
+    all_students = db.session.execute(select(Estudiantes)).scalars().all()
+    # ↓↓↓ Se encarga de procesar la info en un formato legible para devs
+    results = list(map(lambda item: item.serialize(), all_students))
+
+    response_body = {"msg": "ok", "results": results}
+
+    return jsonify(response_body), 200
+
+
+@app.route("/students/<int:id>", methods=["GET"])
+def get_one_students(id):
+    print(id)
+
+    student = db.session.get(Estudiantes, id)
+    print(student)
+
+    if student is None:
+        return jsonify({"msg": "El estudiante no existe"}), 404
+
+    response_body = {"msg": "ok", "result": student.serialize}
 
     return jsonify(response_body), 200
 

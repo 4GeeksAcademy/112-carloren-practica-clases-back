@@ -49,7 +49,7 @@ class Direccion(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)
     barrio: Mapped[str] = mapped_column(String(120))
     calle: Mapped[str] = mapped_column(String(120))
-    parent_id: Mapped[int] = mapped_column(ForeignKey("parent_table.id"))
+    parent_id: Mapped[int] = mapped_column(ForeignKey("estudiantes.id"))
     direccion: Mapped["Direccion"] = relationship(back_populates="estudiantes")
 
     def serialize(self):

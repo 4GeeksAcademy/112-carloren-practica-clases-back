@@ -3,6 +3,7 @@ from sqlalchemy import String, Boolean
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.orm import relationship
+from typing import List
 
 db = SQLAlchemy()
 
@@ -13,11 +14,22 @@ class User(db.Model):
     password: Mapped[str] = mapped_column(nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean(), nullable=False)
 
+    favorites: Mapped[List["Favorites"]] = relationship("Favorites", back_populates="user", cascade=("all, delete-orphan"))
+
     def serialize(self):
         return {
             "id": self.id,
             "email": self.email,
             # do not serialize the password, its a security breach
+        }
+
+    def all_user_favorites(self):
+        results_favorites = list(map(lambda item: item.serialize(), self.favorites))
+        print(self.favorites)
+        return {
+            "id": self.id,
+            "email": self.email,
+            "favorites": results_favorites,
         }
 
 
@@ -59,3 +71,17 @@ class Direccion(db.Model):
             "calle": self.calle,
             # do not serialize the password, its a security breach
         }
+
+
+class Favorites(db.Model):
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("user.id"), nullable=False)
+
+    user: Mapped["User"] = relationship("User", back_populates="favorites")
+    nombre: Mapped[str] = mapped_column(String(120))
+    color: Mapped[str] = mapped_column(String(120))
+
+    def serialize(self):
+        result = {"id": self.id, "nombre": self.nombre, "color": self.color}
+
+        return result
